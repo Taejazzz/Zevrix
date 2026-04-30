@@ -1,0 +1,394 @@
+<!-- Simplified Crawlers Section - Katana Style -->
+<section id="section-crawlers" class="section">
+    <div class="header">
+        <div class="header-title">
+            <h1>🕷️ Crawlers</h1>
+            <p>Endpoint discovery and authenticated scanning powered by advanced crawling</p>
+        </div>
+    </div>
+
+    <!-- Endpoint Discovery Panel -->
+    <div class="panel">
+        <div class="panel-header">
+            <h3 class="panel-title">🔍 Endpoint Discovery</h3>
+            <p style="font-size: 0.9rem; color: var(--text-secondary); margin-top: 0.5rem;">
+                Crawl any website to automatically discover all endpoints, forms, and API routes
+            </p>
+        </div>
+        <div class="panel-body">
+            <form id="discovery-form" onsubmit="startEndpointDiscovery(event)">
+                <div class="form-group" style="flex: 2;">
+                    <label class="form-label">Target URL</label>
+                    <input type="url" id="discovery-url" class="form-input" placeholder="https://example.com" required>
+                </div>
+
+                <button type="submit" class="btn btn-primary" id="discovery-btn">
+                    <span id="discovery-btn-text">🔍 Discover Endpoints</span>
+                    <div class="spinner" id="discovery-spinner" style="display: none;"></div>
+                </button>
+            </form>
+
+            <!-- Discovery Results -->
+            <div id="discovery-results" style="display: none; margin-top: 1.5rem;">
+                <h4>📊 Discovered Endpoints</h4>
+
+                <div class="stats-row"
+                    style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin: 1rem 0;">
+                    <div class="stat-card">
+                        <div class="stat-value" id="discovery-total">0</div>
+                        <div class="stat-label">Total Endpoints</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="discovery-html">0</div>
+                        <div class="stat-label">HTML Links</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="discovery-js">0</div>
+                        <div class="stat-label">JavaScript APIs</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="discovery-forms">0</div>
+                        <div class="stat-label">Forms</div>
+                    </div>
+                </div>
+
+                <!-- Endpoints List -->
+                <div
+                    style="margin-top: 1.5rem; max-height: 400px; overflow-y: auto; background: var(--bg-secondary); border-radius: 8px; padding: 1rem;">
+                    <div id="endpoints-list" style="font-family: monospace; font-size: 0.85rem; line-height: 1.8;">
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+                    <button class="btn btn-secondary" onclick="exportEndpoints()">
+                        💾 Export as JSON
+                    </button>
+                    <button class="btn btn-secondary" onclick="copyEndpoints()">
+                        📋 Copy to Clipboard
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Authenticated Crawling Panel -->
+    <div class="panel">
+        <div class="panel-header">
+            <h3 class="panel-title">🔒 Authenticated Crawling</h3>
+            <p style="font-size: 0.9rem; color: var(--text-secondary); margin-top: 0.5rem;">
+                Scan authenticated pages using your session - discovers endpoints only visible when logged in
+            </p>
+        </div>
+        <div class="panel-body">
+            <form id="auth-form" onsubmit="startAuthenticatedCrawl(event)">
+                <div class="form-group">
+                    <label class="form-label">Target URL (Authenticated Page)</label>
+                    <input type="url" id="auth-url" class="form-input" placeholder="https://example.com/dashboard"
+                        required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Session Cookie Name</label>
+                    <input type="text" id="auth-cookie-name" class="form-input"
+                        placeholder="session, connect.sid, PHPSESSID..." required>
+                    <small style="color: var(--text-secondary); display: block; margin-top: 0.25rem;">
+                        Check your browser Developer Tools → Application → Cookies
+                    </small>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Session Cookie Value</label>
+                    <input type="text" id="auth-cookie-value" class="form-input"
+                        placeholder="Your session cookie value..." required>
+                    <small style="color: var(--text-secondary); display: block; margin-top: 0.25rem;">
+                        Copy the cookie value from your logged-in browser session
+                    </small>
+                </div>
+
+                <button type="submit" class="btn btn-primary" id="auth-btn">
+                    <span id="auth-btn-text">🔒 Scan Authenticated Pages</span>
+                    <div class="spinner" id="auth-spinner" style="display: none;"></div>
+                </button>
+            </form>
+
+            <!-- Auth Results -->
+            <div id="auth-results" style="display: none; margin-top: 1.5rem;">
+                <div id="auth-status-msg"></div>
+
+                <h4>📊 Authenticated Endpoints</h4>
+
+                <div class="stats-row"
+                    style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin: 1rem 0;">
+                    <div class="stat-card">
+                        <div class="stat-value" id="auth-total">0</div>
+                        <div class="stat-label">Total Endpoints</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="auth-protected">0</div>
+                        <div class="stat-label">Auth-Only</div>
+                    </div>
+                </div>
+
+                <!-- Auth Endpoints List -->
+                <div
+                    style="margin-top: 1.5rem; max-height: 400px; overflow-y: auto; background: var(--bg-secondary); border-radius: 8px; padding: 1rem;">
+                    <div id="auth-endpoints-list" style="font-family: monospace; font-size: 0.85rem; line-height: 1.8;">
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+                    <button class="btn btn-secondary" onclick="exportAuthEndpoints()">
+                        💾 Export as JSON
+                    </button>
+                    <button class="btn btn-secondary" onclick="copyAuthEndpoints()">
+                        📋 Copy to Clipboard
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+    // Crawler Functions - Simplified for Katana-style operation
+
+    let discoveredEndpoints = [];
+    let authEndpoints = [];
+
+    /**
+     * Endpoint Discovery - Just URL, get all endpoints
+     */
+    async function startEndpointDiscovery(event) {
+        event.preventDefault();
+
+        const url = document.getElementById('discovery-url').value;
+        const btn = document.getElementById('discovery-btn');
+        const btnText = document.getElementById('discovery-btn-text');
+        const spinner = document.getElementById('discovery-spinner');
+        const results = document.getElementById('discovery-results');
+
+        btn.disabled = true;
+        btnText.style.display = 'none';
+        spinner.style.display = 'inline-block';
+        results.style.display = 'none';
+
+        try {
+            const response = await fetch(`${API_BASE}/api/crawl/discovery`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ url, depth: 3 })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                discoveredEndpoints = data.endpoints || [];
+                displayDiscoveryResults(data);
+            } else {
+                showToast(data.error || 'Discovery failed', 'error');
+            }
+        } catch (error) {
+            showToast('Failed to discover endpoints: ' + error.message, 'error');
+        } finally {
+            btn.disabled = false;
+            btnText.style.display = 'inline';
+            spinner.style.display = 'none';
+        }
+    }
+
+    function displayDiscoveryResults(data) {
+        const results = document.getElementById('discovery-results');
+        results.style.display = 'block';
+
+        // Update stats
+        document.getElementById('discovery-total').textContent = data.total_discovered || 0;
+        document.getElementById('discovery-html').textContent = data.by_source?.html || 0;
+        document.getElementById('discovery-js').textContent = data.by_source?.javascript || 0;
+        document.getElementById('discovery-forms').textContent = data.by_source?.forms || 0;
+
+        // Display endpoints as simple list
+        const list = document.getElementById('endpoints-list');
+        const grouped = {};
+
+        // Group by method
+        data.endpoints.forEach(ep => {
+            const method = ep.method || 'GET';
+            if (!grouped[method]) grouped[method] = [];
+            grouped[method].push(ep.url);
+        });
+
+        let html = '';
+        Object.keys(grouped).sort().forEach(method => {
+            html += `<div style="margin-bottom: 1rem;">`;
+            html += `<div style="color: var(--accent-primary); font-weight: 600; margin-bottom: 0.5rem;">${method} (${grouped[method].length})</div>`;
+            grouped[method].forEach(url => {
+                html += `<div style="padding-left: 1rem; color: var(--text-secondary);">${url}</div>`;
+            });
+            html += `</div>`;
+        });
+
+        list.innerHTML = html;
+
+        showToast(`Discovered ${data.total_discovered} endpoints!`, 'success');
+    }
+
+    /**
+     * Authenticated Crawling - URL + Session ID
+     */
+    async function startAuthenticatedCrawl(event) {
+        event.preventDefault();
+
+        const url = document.getElementById('auth-url').value;
+        const cookieName = document.getElementById('auth-cookie-name').value;
+        const cookieValue = document.getElementById('auth-cookie-value').value;
+
+        const btn = document.getElementById('auth-btn');
+        const btnText = document.getElementById('auth-btn-text');
+        const spinner = document.getElementById('auth-spinner');
+        const results = document.getElementById('auth-results');
+
+        btn.disabled = true;
+        btnText.style.display = 'none';
+        spinner.style.display = 'inline-block';
+        results.style.display = 'none';
+
+        try {
+            const response = await fetch(`${API_BASE}/api/crawl/authenticated`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({
+                    url,
+                    depth: 3,
+                    auth: {
+                        type: 'cookie',
+                        cookies: {
+                            [cookieName]: cookieValue
+                        }
+                    }
+                })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                authEndpoints = data.endpoints || [];
+                displayAuthResults(data);
+            } else {
+                showToast(data.error || 'Authenticated crawl failed', 'error');
+            }
+        } catch (error) {
+            showToast('Failed to crawl authenticated pages: ' + error.message, 'error');
+        } finally {
+            btn.disabled = false;
+            btnText.style.display = 'inline';
+            spinner.style.display = 'none';
+        }
+    }
+
+    function displayAuthResults(data) {
+        const results = document.getElementById('auth-results');
+        const statusMsg = document.getElementById('auth-status-msg');
+
+        results.style.display = 'block';
+
+        // Show auth status
+        if (data.authenticated) {
+            statusMsg.innerHTML = `<div style="padding: 1rem; background: var(--accent-success); color: white; border-radius: 8px; margin-bottom: 1rem;">
+            ✅ Authentication successful! Crawled ${data.total_discovered || 0} endpoints from authenticated pages.
+        </div>`;
+        } else {
+            statusMsg.innerHTML = `<div style="padding: 1rem; background: var(--accent-error); color: white; border-radius: 8px; margin-bottom: 1rem;">
+            ❌ Authentication failed. Please check your session cookie.
+        </div>`;
+            return;
+        }
+
+        // Update stats
+        document.getElementById('auth-total').textContent = data.total_discovered || 0;
+        const protectedCount = data.endpoints.filter(e => e.auth_required).length;
+        document.getElementById('auth-protected').textContent = protectedCount;
+
+        // Display auth endpoints
+        const list = document.getElementById('auth-endpoints-list');
+        const grouped = {};
+
+        data.endpoints.forEach(ep => {
+            const method = ep.method || 'GET';
+            if (!grouped[method]) grouped[method] = [];
+            grouped[method].push({
+                url: ep.url,
+                protected: ep.auth_required
+            });
+        });
+
+        let html = '';
+        Object.keys(grouped).sort().forEach(method => {
+            html += `<div style="margin-bottom: 1rem;">`;
+            html += `<div style="color: var(--accent-primary); font-weight: 600; margin-bottom: 0.5rem;">${method} (${grouped[method].length})</div>`;
+            grouped[method].forEach(item => {
+                const icon = item.protected ? '🔒 ' : '';
+                html += `<div style="padding-left: 1rem; color: var(--text-secondary);">${icon}${item.url}</div>`;
+            });
+            html += `</div>`;
+        });
+
+        list.innerHTML = html;
+
+        showToast(`Discovered ${data.total_discovered} authenticated endpoints!`, 'success');
+    }
+
+    // Export functions
+    function exportEndpoints() {
+        if (!discoveredEndpoints.length) {
+            showToast('No endpoints to export', 'warning');
+            return;
+        }
+
+        const blob = new Blob([JSON.stringify(discoveredEndpoints, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `endpoints-${Date.now()}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+    }
+
+    function copyEndpoints() {
+        if (!discoveredEndpoints.length) {
+            showToast('No endpoints to copy', 'warning');
+            return;
+        }
+
+        const text = discoveredEndpoints.map(e => e.url).join('\n');
+        navigator.clipboard.writeText(text);
+        showToast('Endpoints copied to clipboard!', 'success');
+    }
+
+    function exportAuthEndpoints() {
+        if (!authEndpoints.length) {
+            showToast('No endpoints to export', 'warning');
+            return;
+        }
+
+        const blob = new Blob([JSON.stringify(authEndpoints, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `auth-endpoints-${Date.now()}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+    }
+
+    function copyAuthEndpoints() {
+        if (!authEndpoints.length) {
+            showToast('No endpoints to copy', 'warning');
+            return;
+        }
+
+        const text = authEndpoints.map(e => e.url).join('\n');
+        navigator.clipboard.writeText(text);
+        showToast('Authenticated endpoints copied to clipboard!', 'success');
+    }
+</script>
