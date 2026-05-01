@@ -453,7 +453,7 @@
     <div class="login-container">
         <div class="login-card">
             <div class="login-header">
-                <img src="/static/zevrix_logo.png" alt="Zevrix" class="logo-img">
+                <img src="static/zevrix_logo.png" alt="Zevrix" class="logo-img">
                 <p>Security Scanner Dashboard</p>
             </div>
 
@@ -601,7 +601,7 @@
                     // Store company info
                     localStorage.setItem('zevrix_company', JSON.stringify(data.company));
                     // Redirect to dashboard
-                    window.location.href = '/dashboard.html';
+                    window.location.href = 'dashboard.html';
                 } else {
                     errorDiv.textContent = data.error || 'Login failed';
                     errorDiv.classList.add('show');
@@ -711,7 +711,7 @@
                 const data = await response.json();
 
                 if (data.authenticated) {
-                    window.location.href = '/dashboard.html';
+                    window.location.href = 'dashboard.html';
                 }
             } catch (error) {
                 // Not logged in, stay on login page

@@ -1726,7 +1726,7 @@
         <!-- Sidebar Navigation -->
         <aside class="sidebar">
             <div class="logo">
-                <img src="/static/zevrix_logo.png" alt="Zevrix Logo">
+                <img src="static/zevrix_logo.png" alt="Zevrix Logo">
             </div>
 
             <!-- Company Info -->
@@ -2482,7 +2482,7 @@
 
                 if (!data.authenticated) {
                     // Redirect to login page
-                    window.location.href = '/index.html';
+                    window.location.href = 'index.html';
                     return false;
                 }
 
@@ -2492,7 +2492,7 @@
             } catch (error) {
                 console.error('Auth check failed:', error);
                 // Redirect to login if auth check fails
-                window.location.href = '/index.html';
+                window.location.href = 'index.html';
                 return false;
             }
         }
@@ -2528,7 +2528,7 @@
             localStorage.removeItem('zevrix_company');
 
             // Redirect to login
-            window.location.href = '/index.html';
+            window.location.href = 'index.html';
         }
 
         /**
