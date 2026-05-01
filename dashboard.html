@@ -2478,10 +2478,23 @@
                 const response = await fetch(`${API_BASE}/api/auth/status`, {
                     credentials: 'include'
                 });
+                
+                // If we get a 5xx or connection error, don't immediately kick the user out
+                if (!response.ok && response.status >= 500) {
+                    console.warn('Server error during auth check, staying on page...');
+                    return true;
+                }
+
                 const data = await response.json();
 
                 if (!data.authenticated) {
-                    // Redirect to login page
+                    // One final check: if we have a company in localStorage, maybe try to wait?
+                    if (localStorage.getItem('zevrix_company')) {
+                        console.log('Auth check failed but localStorage exists, retrying in 2s...');
+                        setTimeout(checkAuth, 2000);
+                        return true;
+                    }
+                    
                     window.location.href = 'index.html';
                     return false;
                 }
@@ -2491,9 +2504,8 @@
                 return true;
             } catch (error) {
                 console.error('Auth check failed:', error);
-                // Redirect to login if auth check fails
-                window.location.href = 'index.html';
-                return false;
+                // If it's a connection error, don't redirect immediately to stop the loop
+                return true; 
             }
         }
 

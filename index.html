@@ -705,16 +705,22 @@
         // Check if already logged in
         async function checkAuth() {
             try {
+                // We will only redirect if we are SURE we are authenticated
+                // and we are not currently trying to log in
+                if (document.getElementById('loginBtn').classList.contains('loading')) return;
+
                 const response = await fetch(`${API_BASE}/api/auth/status`, {
                     credentials: 'include'
                 });
                 const data = await response.json();
 
                 if (data.authenticated) {
+                    // Save to localStorage as a double-check
+                    localStorage.setItem('zevrix_company', JSON.stringify(data.company));
                     window.location.href = 'dashboard.html';
                 }
             } catch (error) {
-                // Not logged in, stay on login page
+                // Connection issues, just stay here
             }
         }
 
