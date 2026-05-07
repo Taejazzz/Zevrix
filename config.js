@@ -1,6 +1,6 @@
 // API Configuration
 // Update this URL to point to your deployed backend API
-const API_BASE_URL = window.location.hostname === 'localhost'
+const API_BASE_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
     ? 'http://localhost:3000'  // Local development - Backend runs on port 3000
     : 'https://zevrix-backend.onrender.com';  // Production - Render Backend URL
 

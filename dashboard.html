@@ -240,8 +240,16 @@
             justify-content: center;
             padding: 0;
             border-bottom: 1px solid var(--border-color);
-            margin-bottom: 1rem;
+            margin-bottom: 0.5rem;
             overflow: hidden;
+        }
+
+        .version-badge {
+            font-size: 0.65rem;
+            color: var(--text-secondary);
+            text-align: center;
+            margin-bottom: 1rem;
+            opacity: 0.7;
         }
 
         .logo img {
@@ -1728,6 +1736,7 @@
             <div class="logo">
                 <img src="static/zevrix_logo.png" alt="Zevrix Logo">
             </div>
+            <div class="version-badge">Version 1.2 (Production)</div>
 
             <!-- Company Info -->
             <div class="company-info" id="companyInfo">
@@ -2261,17 +2270,18 @@
     <!-- Toast Container -->
     <div class="toast-container" id="toast-container"></div>
 
-    <!-- API Configuration -->
-    <script>
-        // Configure API base URL - Change this if your backend runs on a different port
-        window.API_CONFIG = {
-            BASE_URL: 'http://localhost:3000'  // Backend runs on port 3000
-        };
-    </script>
+
 
     <script>
         // API Configuration - Connect to backend
-        const API_BASE = window.API_CONFIG.BASE_URL;
+        let API_BASE = 'https://zevrix-backend.onrender.com'; // Default production URL
+        if (window.API_CONFIG && window.API_CONFIG.BASE_URL) {
+            API_BASE = window.API_CONFIG.BASE_URL;
+            console.log('🚀 [CONFIG] Using API_BASE:', API_BASE);
+        } else {
+            console.warn('⚠️ [CONFIG] window.API_CONFIG not found, using default production URL');
+        }
+        window.CURRENT_API_BASE = API_BASE; // Global for console debugging
 
         // ========================================
         // Application State (In-Memory Storage)
@@ -4337,7 +4347,8 @@
                 }
             } catch (error) {
                 console.error('[ERROR] API health check failed:', error);
-                showToast('Warning: Cannot connect to API server', 'warning');
+                console.error('[DEBUG] Attempted URL:', `${API_BASE}/health`);
+                showToast(`[v1.2] Warning: Cannot connect to API server at ${API_BASE}`, 'warning');
             }
         }
 
@@ -5358,7 +5369,7 @@
             document.getElementById('loading-overlay').classList.add('active');
 
             try {
-                const response = await fetch('/api/scan-with-cookies', {
+                const response = await fetch(`${API_BASE}/api/scan-with-cookies`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     credentials: 'include',
@@ -5439,7 +5450,7 @@
             document.getElementById('loading-overlay').classList.add('active');
 
             try {
-                const response = await fetch('/api/authenticated-scan', {
+                const response = await fetch(`${API_BASE}/api/authenticated-scan`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     credentials: 'include',
@@ -5515,7 +5526,7 @@
                     // Use the analyze endpoint instead
                     showToast('Loading OWASP compliance...', 'info');
                     try {
-                        const response = await fetch('/api/owasp/analyze', {
+                        const response = await fetch(`${API_BASE}/api/owasp/analyze`, {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ issues: selectedScan.issues })
@@ -5543,7 +5554,7 @@
             showToast('Loading OWASP compliance...', 'info');
 
             try {
-                const response = await fetch(`/api/owasp/${scanIdToUse}`);
+                const response = await fetch(`${API_BASE}/api/owasp/${scanIdToUse}`);
                 const data = await response.json();
 
                 if (data.error) {
